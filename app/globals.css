@@ -1,0 +1,151 @@
+/* ============================================================
+   씨엔씨티 카드뉴스 메이커 — 전역 스타일
+   CNCITY 컬러 시스템 (PANTONE 기반)
+   ============================================================ */
+:root{
+  --ink:#0B1F2E;        /* 본문 텍스트(네이비) */
+  --bg:#F2F7FB;         /* 페이지 배경(옅은 블루) */
+  --panel:#FFFFFF;
+  --soft:#EAF3FA;
+  --line:#D8E4ED;
+  --muted:#74879A;
+
+  /* CNCITY 브랜드 */
+  --cyan:#00AEEF;       /* process cyan — 포인트 */
+  --sky:#57C1E9;        /* PANTONE 2985 */
+  --blue:#0066B3;       /* PANTONE 300 — 딥블루 */
+  --cyan-soft:#E2F4FC;
+  --card-ink:#0A1A28;   /* 다크 카드 배경 */
+  --teal:#289A82;       /* PANTONE 7473 */
+  --aqua:#56C5D0;       /* PANTONE 325 */
+  --coral:#F04E58;      /* PANTONE 1785 */
+
+  --gap:16px; --r:14px;
+  --sans:'Pretendard','Apple SD Gothic Neo','Malgun Gothic','Noto Sans KR',system-ui,sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);-webkit-font-smoothing:antialiased}
+body{padding:0 0 90px}
+
+/* 상단바 */
+.topbar{display:flex;align-items:center;gap:12px;padding:18px 28px;border-bottom:1px solid var(--line);position:sticky;top:0;background:rgba(242,247,251,.92);backdrop-filter:blur(8px);z-index:30}
+.logo{position:relative;width:38px;height:34px}
+.logo svg{display:block}
+.brand{font-weight:800;letter-spacing:.3px;color:var(--ink)}
+.brand small{display:block;font-weight:500;color:var(--muted);font-size:11px;letter-spacing:1.5px;text-transform:uppercase}
+
+.wrap{max-width:1180px;margin:0 auto;padding:26px 22px}
+.step{font-size:12px;letter-spacing:2px;color:var(--cyan);font-weight:800;text-transform:uppercase;margin:0 0 6px}
+h1.page{font-size:28px;margin:0 0 22px;letter-spacing:-.5px}
+h2.sec{font-size:16px;margin:34px 0 12px;display:flex;align-items:center;gap:8px}
+h2.sec .n{width:22px;height:22px;border-radius:7px;background:var(--blue);color:#fff;font-size:12px;display:grid;place-items:center;font-weight:800}
+
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:18px}
+.row{display:flex;gap:var(--gap);flex-wrap:wrap}
+.field{display:flex;flex-direction:column;gap:6px}
+.lab{font-size:12.5px;color:var(--muted);font-weight:600}
+input[type=text],textarea,select{font-family:var(--sans);font-size:14px;color:var(--ink);background:#fff;border:1px solid var(--line);border-radius:10px;padding:10px 12px;outline:none}
+input[type=text]:focus,textarea:focus,select:focus{border-color:var(--cyan)}
+textarea{resize:vertical;line-height:1.6}
+input[type=color]{width:38px;height:30px;border:1px solid var(--line);border-radius:8px;background:#fff;padding:2px;cursor:pointer}
+input[type=range]{accent-color:var(--cyan)}
+
+.btn{font-family:var(--sans);font-weight:700;font-size:14px;border:none;border-radius:10px;padding:11px 16px;cursor:pointer;transition:.15s;display:inline-flex;align-items:center;gap:7px}
+.btn.brand{background:var(--blue);color:#fff}
+.btn.brand:hover{filter:brightness(1.08)}
+.btn.brand:disabled{opacity:.45;cursor:not-allowed}
+.btn.navy{background:var(--card-ink);color:#fff}
+.btn.navy:hover{opacity:.9}
+.btn.ghost{background:var(--soft);color:var(--ink)}
+.btn.ghost:hover{background:#dcebf5}
+.btn.sm{padding:7px 11px;font-size:12.5px;border-radius:8px}
+
+.swatches{display:flex;gap:7px;align-items:center}
+.sw{width:26px;height:26px;border-radius:50%;border:2px solid #fff;box-shadow:0 0 0 1px var(--line);cursor:pointer;transition:.12s}
+.sw:hover{transform:scale(1.12)}
+
+.status{font-size:13px;color:var(--muted);min-height:18px}
+.status.err{color:#c0392b}
+.status.ok{color:var(--blue)}
+.note{font-size:12.5px;color:var(--muted);margin:10px 0 6px;line-height:1.6}
+.grow{flex:1}
+
+/* ── 네이버 뉴스 검색 ── */
+.kw-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.kw-box{border:1px solid var(--line);border-radius:12px;padding:15px;background:#fff;transition:.15s}
+.kw-box.on{border-color:var(--cyan);box-shadow:0 0 0 3px var(--cyan-soft)}
+.kw-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px}
+.kw-head b{font-size:15px}
+.kw-head .cnt{font-size:12px;color:var(--muted);font-weight:600}
+.kw-sub{font-size:12px;color:var(--muted);margin:0 0 12px;line-height:1.55}
+.chips{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:10px}
+.chip{font-size:12.5px;border-radius:999px;padding:5px 11px;border:1px solid var(--line);background:#fff;cursor:pointer;font-family:var(--sans);color:var(--ink);transition:.12s;line-height:1.3}
+.chip.sel{background:var(--cyan-soft);border-color:var(--sky);color:#0a5a86;font-weight:600}
+.chip.sel::after{content:' ✕';font-size:10px;opacity:.7}
+.chip.add{color:var(--muted)}
+.chip.add:hover{border-color:var(--cyan);color:var(--blue)}
+.sugg-label{font-size:11.5px;color:var(--muted);margin:2px 0 7px;font-weight:600}
+.sugg{max-height:120px;overflow-y:auto;display:flex;flex-wrap:wrap;gap:6px;padding-right:4px}
+.kw-add{display:flex;gap:6px;margin-top:11px}
+.kw-add input{flex:1;font-size:13px}
+
+.search-bar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:14px}
+.qprev{font-size:12.5px;color:var(--muted)}
+.qprev b{color:var(--ink);font-size:13px}
+.sort-toggle{display:inline-flex;border:1px solid var(--line);border-radius:9px;overflow:hidden}
+.sort-toggle button{font-family:var(--sans);font-size:12.5px;font-weight:600;border:none;background:#fff;color:var(--muted);padding:8px 13px;cursor:pointer}
+.sort-toggle button.on{background:var(--blue);color:#fff}
+
+.results{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px}
+.res{border:1px solid var(--line);border-radius:12px;padding:13px;background:#fff;cursor:pointer;transition:.12s}
+.res:hover{border-color:var(--cyan);transform:translateY(-1px);box-shadow:0 6px 16px rgba(0,80,140,.08)}
+.res .rt{font-size:13.5px;font-weight:700;line-height:1.4;margin-bottom:5px}
+.res .rs{font-size:12px;color:var(--muted);line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.res .rm{font-size:11px;color:var(--blue);margin-top:7px;font-weight:600}
+.sentinel{height:1px}
+.loadmore{text-align:center;color:var(--muted);font-size:12.5px;padding:14px 0}
+
+/* ── 카드 미리보기 가로 스크롤 ── */
+.cards-row{display:flex;gap:18px;overflow-x:auto;padding:8px 4px 18px;scroll-snap-type:x proximity}
+.card-col{flex:0 0 auto;width:281px;scroll-snap-align:start}
+.card-tag{font-size:11px;letter-spacing:1.5px;color:var(--muted);font-weight:700;margin:0 0 7px;text-transform:uppercase}
+.card-viewport{width:281px;height:351px;overflow:hidden;border-radius:14px;box-shadow:0 6px 22px rgba(0,40,80,.14);background:#000}
+.card-scaler{width:1080px;height:1350px;transform:scale(.26018);transform-origin:top left}
+
+/* ── 실제 출력 카드 (1080 x 1350) ── */
+.card{width:1080px;height:1350px;position:relative;overflow:hidden;background:#0A1A28}
+.card .ci{position:absolute;inset:0;padding:96px 90px;display:flex;flex-direction:column;z-index:2}
+.card .cimg{position:absolute;inset:0;background-size:cover;background-position:center;z-index:0}
+.card .cshade{position:absolute;inset:0;z-index:1;background:linear-gradient(180deg,rgba(0,0,0,.28),rgba(0,0,0,.66))}
+.card .dots{position:absolute;top:74px;right:80px;z-index:1}
+.card .ctop{font-size:calc(31px * var(--s));font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--acc)}
+.card .clabel{display:inline-block;font-size:calc(35px * var(--s));font-weight:800;letter-spacing:1px;color:var(--acc);margin-bottom:30px}
+.card .ctitle{font-size:calc(94px * var(--s));font-weight:800;line-height:1.16;letter-spacing:-1px;white-space:pre-line}
+.card .csub{font-size:calc(42px * var(--s));font-weight:500;opacity:.88;margin-top:24px;line-height:1.45}
+.card .ctext{font-size:calc(51px * var(--s));font-weight:600;line-height:1.56;white-space:pre-line}
+.card .cfoot{font-size:calc(29px * var(--s));font-weight:600;opacity:.6;letter-spacing:.5px}
+.card .spacer{flex:1 1 auto}
+.card .barline{width:96px;height:9px;border-radius:8px;background:var(--acc);margin-bottom:34px}
+.card.cover .ctitle{font-size:calc(96px * var(--s))}
+.card.closing .ctitle{font-size:calc(72px * var(--s));line-height:1.2}
+
+/* ── 카드별 편집기 ── */
+.editor{margin-top:12px;background:var(--soft);border:1px solid var(--line);border-radius:12px;padding:13px}
+.editor .field+.field{margin-top:10px}
+.editor textarea,.editor input[type=text]{font-size:13px;background:#fff}
+.ctl{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:11px}
+.ctl .mini{display:flex;align-items:center;gap:6px;font-size:11.5px;color:var(--muted);font-weight:600}
+
+/* ── 캡션/해시태그 ── */
+.twocol{display:grid;grid-template-columns:1.4fr 1fr;gap:18px}
+.copyhead{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.copyhead h3{font-size:14px;margin:0}
+.box{width:100%;min-height:120px}
+
+.render-stage{position:fixed;left:-99999px;top:0;z-index:-1;overflow:visible}
+
+@media (max-width:760px){
+  .wrap{padding:20px 14px}
+  .twocol,.kw-grid,.results{grid-template-columns:1fr}
+  .topbar{padding:14px 16px}
+}
