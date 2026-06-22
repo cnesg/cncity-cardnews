@@ -331,7 +331,7 @@ export default function Page() {
 
       <div className="wrap">
         <p className="step">도시가스 안전 · 대전 지역 카드뉴스</p>
-        <h1 className="page">내용을 넣으면 5컷 카드뉴스가 완성돼요</h1>
+        <h1 className="page">5컷 카드뉴스 생성 자동화!</h1>
 
         {/* 1. 매거진 설정 */}
         <h2 className="sec"><span className="n">1</span>매거진 설정</h2>
