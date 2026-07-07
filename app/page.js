@@ -3,7 +3,9 @@
 import { useState, useRef, useEffect } from 'react';
 
 /* ── 고정 데이터 ─────────────────────────────────────────── */
-const TAGS = ['표지', '본문 1', '본문 2', '본문 3', '마무리'];
+const TAGS5 = ['표지', '본문 1', '본문 2', '본문 3', '마무리'];
+const TAGS10 = ['도입', '궁금증 확장', '문제 정의', '관점 전환 ①', '관점 전환 ②', '핵심', '적용 방식', '결정적 깨달음', '체크리스트', '마무리'];
+const tagFor = (i, len) => (len === 10 ? TAGS10 : TAGS5)[i] || `${i + 1}장`;
 
 const REGION_SUGG = ["유성","서구","동구","중구","대덕","세종","중앙동","효동","판암","용운","대동","자양","가양","용전","성남","홍도","삼성","대청","산내","선화","은행","목동","중촌","대흥","문창","석교","대사","부사","용두","오류","태평","유천","문화","산성","복수","도마","정림","변동","용문","탄방","괴정","가장","내동","갈마","월평","만년","둔산","관저","기성","가수원","진잠","원신흥","온천","노은","신성","전민","구즉","관평","학하","상대","오정","대화","회덕","비래","송촌","중리","법동","신탄진"];
 const TOPIC_SUGG = ["도시가스","가스","안전","사고","에너지","열병합","CNCITY","씨엔씨티","사이렌","싸이렌","헤레디움","esg","csr","공헌","이슈","근교","데이트","먹방","반려견","풋살","축구","스포츠","여가","생활","문화","예술","축제","관심사","소제","인근","일상","정보"];
@@ -132,6 +134,7 @@ export default function Page() {
   const [hashtags, setHashtags] = useState(DEFAULT_TAGS);
   const [status, setStatus] = useState({ msg: '', kind: '' });
   const [generating, setGenerating] = useState(false);
+  const [slideCount, setSlideCount] = useState(5); // 5컷 | 10컷
 
   // 키워드
   const [region, setRegion] = useState([]);
@@ -142,6 +145,7 @@ export default function Page() {
   // 검색
   const [results, setResults] = useState([]);
   const [sort, setSort] = useState('date'); // date=최신순, sim=정확도순
+  const [searchType, setSearchType] = useState('news'); // news, blog, cafe
   const [hasMore, setHasMore] = useState(false);
   const [searching, setSearching] = useState(false);
 
@@ -149,6 +153,7 @@ export default function Page() {
   const sentinelRef = useRef(null);
   const startRef = useRef(1);
   const sortRef = useRef('date');
+  const searchTypeRef = useRef('news');
   const activeQueryRef = useRef('');
   const loadingRef = useRef(false);
   const hasMoreRef = useRef(false);
@@ -185,26 +190,22 @@ export default function Page() {
     const src = (srcOverride ?? srcText).trim();
     if (!src) { say('먼저 내용을 입력하거나 기사를 선택해주세요.', 'err'); return; }
     setGenerating(true);
-    say('AI가 카드뉴스를 만들고 있어요… (약 10~15초)');
+    say(`AI가 카드뉴스 ${slideCount}컷을 만들고 있어요… (약 10~20초)`);
     try {
       const res = await fetch('/api/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ src, magName }),
+        body: JSON.stringify({ src, magName, count: slideCount }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || '서버 오류 ' + res.status);
       const j = extractJson(data.text);
-      setCards((cs) => {
-        const n = cs.map((c) => ({ ...c }));
-        Object.assign(n[0], { type: 'cover', title: j.cover.title, subtitle: j.cover.subtitle, label: '', text: '' });
-        for (let k = 0; k < 3; k++) {
-          const b = (j.bodies && j.bodies[k]) || { label: '', text: '' };
-          Object.assign(n[k + 1], { type: 'body', label: b.label, text: b.text, title: '', subtitle: '' });
-        }
-        Object.assign(n[4], { type: 'closing', label: j.closing.label || '마무리', title: j.closing.title, text: j.closing.text, subtitle: '' });
-        return n;
-      });
+      const bodies = Array.isArray(j.bodies) ? j.bodies : [];
+      setCards([
+        { type: 'cover', label: '', title: j.cover?.title || '', subtitle: j.cover?.subtitle || '', text: '', textColor: '#FFFFFF', bgColor: '#0A1A28', scale: 1, image: null },
+        ...bodies.map((b) => ({ type: 'body', label: b.label || '', title: '', subtitle: '', text: b.text || '', textColor: '#0B1F2E', bgColor: '#FFFFFF', scale: 1, image: null })),
+        { type: 'closing', label: j.closing?.label || '마무리', title: j.closing?.title || '', subtitle: '', text: j.closing?.text || '', textColor: '#FFFFFF', bgColor: '#0A1A28', scale: 1, image: null },
+      ]);
       if (j.caption) setCaption(j.caption);
       if (Array.isArray(j.hashtags)) setHashtags(j.hashtags);
       say('완성됐어요. 카드를 편집하거나 다운로드하세요.', 'ok');
@@ -231,7 +232,7 @@ export default function Page() {
     setSearching(true);
     const start = startRef.current;
     try {
-      const res = await fetch(`/api/news?query=${encodeURIComponent(query)}&start=${start}&sort=${sortRef.current}`);
+      const res = await fetch(`/api/news?query=${encodeURIComponent(query)}&start=${start}&sort=${sortRef.current}&type=${searchTypeRef.current}`);
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || '서버 오류 ' + res.status);
       const incoming = data.items || [];
@@ -257,6 +258,12 @@ export default function Page() {
   function changeSort(s) {
     if (s === sort) return;
     setSort(s); sortRef.current = s;
+    if (activeQueryRef.current) fetchPage(true);
+  }
+  function changeSearchType(t) {
+    if (t === searchType) return;
+    setSearchType(t); searchTypeRef.current = t;
+    setResults([]); setHasMore(false); hasMoreRef.current = false;
     if (activeQueryRef.current) fetchPage(true);
   }
   function onPickArticle(it) {
@@ -296,8 +303,8 @@ export default function Page() {
     return await new Promise((r) => canvas.toBlob(r, 'image/png'));
   }
   async function downloadOne(i) {
-    say(TAGS[i] + ' PNG를 만드는 중…');
-    try { downloadBlob(await cardToBlob(i), `card_${i + 1}.png`); say(TAGS[i] + ' 저장 완료', 'ok'); }
+    say(tagFor(i, cards.length) + ' PNG를 만드는 중…');
+    try { downloadBlob(await cardToBlob(i), `card_${i + 1}.png`); say(tagFor(i, cards.length) + ' 저장 완료', 'ok'); }
     catch (e) { say('PNG 생성 실패: ' + e.message, 'err'); }
   }
   async function downloadZip() {
@@ -331,7 +338,7 @@ export default function Page() {
 
       <div className="wrap">
         <p className="step">도시가스 안전 · 대전 지역 카드뉴스</p>
-        <h1 className="page">5컷 카드뉴스 생성 자동화!</h1>
+        <h1 className="page">내용을 넣으면 5컷 카드뉴스가 완성돼요</h1>
 
         {/* 1. 매거진 설정 */}
         <h2 className="sec"><span className="n">1</span>매거진 설정</h2>
@@ -363,16 +370,25 @@ export default function Page() {
             <textarea rows={5} value={srcText} placeholder="예) 겨울철 보일러 환기 안전 수칙, 가스 누출 시 행동 요령 등 핵심 내용을 적어주세요." onChange={(e) => setSrcText(e.target.value)} />
           </div>
           <div className="ctl">
-            <button className="btn ghost sm" onClick={() => { setSrcText(SAMPLE_TEXT); say('예시를 채웠어요. ‘AI로 5컷 생성’을 눌러보세요.'); }}>예시 내용 채우기</button>
+            <button className="btn ghost sm" onClick={() => { setSrcText(SAMPLE_TEXT); say('예시를 채웠어요. ‘AI로 생성’을 눌러보세요.'); }}>예시 내용 채우기</button>
             <span className="grow" />
-            <button className="btn brand" onClick={() => generate()} disabled={generating}>{generating ? '생성 중…' : 'AI로 5컷 생성 →'}</button>
+            <div className="sort-toggle">
+              <button className={slideCount === 5 ? 'on' : ''} onClick={() => setSlideCount(5)}>5컷 · 기본</button>
+              <button className={slideCount === 10 ? 'on' : ''} onClick={() => setSlideCount(10)}>10컷 · 스토리형</button>
+            </div>
+            <button className="btn brand" onClick={() => generate()} disabled={generating}>{generating ? '생성 중…' : `AI로 ${slideCount}컷 생성 →`}</button>
           </div>
           <p className={'status ' + status.kind}>{status.msg}</p>
         </div>
 
-        {/* 2-B. 네이버 뉴스 검색 */}
-        <p className="note" style={{ marginTop: 18 }}><b>또는</b> 네이버 뉴스에서 기사를 찾아 그 내용으로 만들 수도 있어요. 키워드를 <b>지역 + 주제</b>로 나눠 고르세요.</p>
+        {/* 2-B. 네이버 검색 */}
+        <p className="note" style={{ marginTop: 18 }}><b>또는</b> 네이버에서 기사·블로그·카페 글을 찾아 그 내용으로 만들 수도 있어요.</p>
         <div className="panel">
+          <div className="sort-toggle" style={{ marginBottom: 14 }}>
+            <button className={searchType === 'news' ? 'on' : ''} onClick={() => changeSearchType('news')}>📰 뉴스</button>
+            <button className={searchType === 'blog' ? 'on' : ''} onClick={() => changeSearchType('blog')}>📝 블로그</button>
+            <button className={searchType === 'cafe' ? 'on' : ''} onClick={() => changeSearchType('cafe')}>☕ 카페</button>
+          </div>
           <div className="kw-grid">
             <div className={'kw-box' + (region.length ? ' on' : '')}>
               <div className="kw-head"><b>대전 지역</b><span className="cnt">{region.length}개</span></div>
@@ -414,7 +430,7 @@ export default function Page() {
               <button className={sort === 'date' ? 'on' : ''} onClick={() => changeSort('date')}>최신순</button>
               <button className={sort === 'sim' ? 'on' : ''} onClick={() => changeSort('sim')}>정확도순</button>
             </div>
-            <button className="btn brand" onClick={() => fetchPage(true)} disabled={searching}>{searching ? '검색 중…' : '네이버 뉴스 검색 →'}</button>
+            <button className="btn brand" onClick={() => fetchPage(true)} disabled={searching}>{searching ? '검색 중…' : `네이버 ${searchType === 'news' ? '뉴스' : searchType === 'blog' ? '블로그' : '카페'} 검색 →`}</button>
           </div>
 
           <div id="newsArea">
@@ -424,7 +440,7 @@ export default function Page() {
                   <div className="res" key={it.link || idx} onClick={() => onPickArticle(it)}>
                     <div className="rt">{it.title}</div>
                     <div className="rs">{it.summary}</div>
-                    <div className="rm">{it.press} · 이 기사로 카드 만들기 →</div>
+                    <div className="rm">{it.press} · 이 글로 카드 만들기 →</div>
                   </div>
                 ))}
               </div>
@@ -432,7 +448,7 @@ export default function Page() {
             {results.length > 0 && (hasMore || searching) && (<div className="loadmore">{searching ? '불러오는 중…' : '아래로 스크롤하면 더 불러와요'}</div>)}
             <div className="sentinel" ref={sentinelRef} />
           </div>
-          <p className="note" style={{ margin: '8px 0 0' }}>NAVER 검색 결과 기반. 기사 전문은 가져오지 않고 제목·요약만 사용해요.</p>
+          <p className="note" style={{ margin: '8px 0 0' }}>NAVER 검색 결과 기반. 전문은 가져오지 않고 제목·요약만 사용해요.</p>
         </div>
 
         {/* 3. 카드 미리보기 + 편집 */}
@@ -441,7 +457,7 @@ export default function Page() {
         <div className="cards-row">
           {cards.map((c, i) => (
             <div className="card-col" key={i}>
-              <p className="card-tag">{TAGS[i]}</p>
+              <p className="card-tag">{tagFor(i, cards.length)}</p>
               <div className="card-viewport"><div className="card-scaler">
                 <div className={'card ' + c.type} id={'card-' + i} style={{ background: c.bgColor }}><CardInner c={c} accent={accent} magName={magName} magHandle={magHandle} /></div>
               </div></div>
